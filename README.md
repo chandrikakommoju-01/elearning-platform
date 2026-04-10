@@ -1,3 +1,5 @@
+## 🌐 Live Demo
+👉 https://elearning-platform-ama9.onrender.com
 # 📚 EduLearn — Full-Stack eLearning Platform
 
 A complete eLearning web application with **Student Portal** and **Admin Portal** built with
