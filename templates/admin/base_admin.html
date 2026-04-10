@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="d-flex" id="wrapper">
+
+  <!-- ── ADMIN SIDEBAR ── -->
+  <nav id="sidebar" class="sidebar admin-sidebar bg-dark d-flex flex-column">
+    <div class="sidebar-header px-4 py-3 border-bottom border-white-10">
+      <span class="fw-700 fs-5 text-white"><i class="bi bi-mortarboard-fill me-2 text-accent"></i>EduLearn</span>
+      <div class="text-accent small">Admin Panel</div>
+    </div>
+
+    <div class="px-4 py-3 border-bottom border-white-10">
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-accent d-flex align-items-center justify-content-center fw-700 text-dark"
+             style="width:38px;height:38px;font-size:1rem;">
+          {{ (current_user.full_name or current_user.username)[0].upper() }}
+        </div>
+        <div>
+          <div class="text-white fw-600 small">{{ current_user.full_name or current_user.username }}</div>
+          <div class="text-accent" style="font-size:.7rem;">Administrator</div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav flex-column px-3 py-2 flex-grow-1">
+      <li class="sidebar-section-label px-2 mb-1 mt-2">MAIN</li>
+      <li class="nav-item">
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="nav-link sidebar-link {% if request.endpoint=='admin_dashboard' %}active{% endif %}">
+          <i class="bi bi-grid-fill me-2"></i>Dashboard
+        </a>
+      </li>
+      <li class="sidebar-section-label px-2 mb-1 mt-3">CONTENT</li>
+      <li class="nav-item">
+        <a href="{{ url_for('admin_courses') }}"
+           class="nav-link sidebar-link {% if 'course' in request.endpoint %}active{% endif %}">
+          <i class="bi bi-journal-bookmark-fill me-2"></i>Courses
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('add_course') }}"
+           class="nav-link sidebar-link {% if request.endpoint=='add_course' %}active{% endif %}">
+          <i class="bi bi-plus-circle me-2"></i>Add Course
+        </a>
+      </li>
+      <li class="sidebar-section-label px-2 mb-1 mt-3">USERS</li>
+      <li class="nav-item">
+        <a href="{{ url_for('admin_students') }}"
+           class="nav-link sidebar-link {% if 'student' in request.endpoint %}active{% endif %}">
+          <i class="bi bi-people-fill me-2"></i>Students
+        </a>
+      </li>
+    </ul>
+
+    <div class="px-3 py-3 border-top border-white-10">
+      <a href="{{ url_for('index') }}" class="nav-link sidebar-link text-white-50 mb-1">
+        <i class="bi bi-globe me-2"></i>View Site
+      </a>
+      <a href="{{ url_for('logout') }}" class="nav-link sidebar-link text-danger">
+        <i class="bi bi-box-arrow-left me-2"></i>Logout
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div id="page-content" class="flex-grow-1 overflow-auto bg-light">
+    <header class="topbar bg-white border-bottom px-4 py-2 d-flex align-items-center sticky-top">
+      <button class="btn btn-sm btn-outline-secondary me-3 d-lg-none" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+      </button>
+      <h6 class="mb-0 fw-600">{% block page_title %}Admin{% endblock %}</h6>
+      <div class="ms-auto">
+        <a href="{{ url_for('add_course') }}" class="btn btn-primary btn-sm px-3">
+          <i class="bi bi-plus me-1"></i>New Course
+        </a>
+      </div>
+    </header>
+
+    <main class="p-4">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

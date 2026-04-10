@@ -1,0 +1,218 @@
+/* ============================================================
+   EduLearn Platform — style.css
+   Main custom stylesheet
+   ============================================================ */
+
+/* ── VARIABLES ── */
+:root {
+  --primary:       #4F46E5;
+  --primary-dark:  #1e1b4b;
+  --accent:        #F59E0B;
+  --success:       #10B981;
+  --danger:        #EF4444;
+  --sidebar-w:     240px;
+  --topbar-h:      54px;
+}
+
+/* ── BASE ── */
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  font-size: .9rem;
+  background: #F9FAFB;
+  color: #1F2937;
+}
+
+h1,h2,h3,h4,h5,h6 { font-family: 'Poppins', sans-serif; }
+
+.fw-500 { font-weight: 500 !important; }
+.fw-600 { font-weight: 600 !important; }
+.fw-700 { font-weight: 700 !important; }
+.fs-7   { font-size: .78rem !important; }
+.cursor-pointer { cursor: pointer; }
+.w-fit  { width: fit-content; }
+
+/* ── COLORS ── */
+.bg-primary-dark  { background-color: var(--primary-dark) !important; }
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%) !important;
+}
+.text-accent      { color: var(--accent) !important; }
+.bg-accent        { background-color: var(--accent) !important; }
+.text-white-70    { color: rgba(255,255,255,.7); }
+.border-white-10  { border-color: rgba(255,255,255,.1) !important; }
+
+/* ── BUTTONS ── */
+.btn-accent {
+  background-color: var(--accent);
+  color: #1F2937;
+  border: none;
+  font-weight: 600;
+}
+.btn-accent:hover {
+  background-color: #d97706;
+  color: #1F2937;
+}
+
+/* ── AUTH PAGE ── */
+.auth-page { background: linear-gradient(135deg, #EEF2FF 0%, #FDF4FF 100%); }
+
+/* ── HERO SECTION ── */
+.hero-section {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #312E81 50%, #1e1b4b 100%);
+  padding-top: 80px;
+}
+
+/* ── FEATURE CARDS ── */
+.feature-card { transition: transform .25s ease, box-shadow .25s ease; }
+.feature-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(79,70,229,.12) !important; }
+
+.feature-icon {
+  width: 60px; height: 60px;
+  background: linear-gradient(135deg, #EEF2FF, #DDD6FE);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+  font-size: 1.6rem;
+  color: var(--primary);
+}
+
+/* ── COURSE CARDS ── */
+.course-card { transition: transform .25s ease, box-shadow .25s ease; }
+.course-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,.10) !important; }
+
+.course-thumb { position: relative; overflow: hidden; }
+.course-level-badge {
+  position: absolute; top: 10px; left: 10px;
+  font-size: .7rem;
+}
+
+/* ── SIDEBAR LAYOUT ── */
+#wrapper { min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  position: fixed;
+  left: 0; top: 0;
+  z-index: 1000;
+  flex-shrink: 0;
+  overflow-y: auto;
+  transition: transform .3s ease;
+}
+
+#page-content {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR LINKS ── */
+.sidebar-section-label {
+  font-size: .65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  font-weight: 600;
+}
+
+.sidebar-link {
+  color: rgba(255,255,255,.65) !important;
+  border-radius: 10px;
+  padding: .55rem .9rem !important;
+  font-size: .85rem;
+  font-weight: 500;
+  transition: all .2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-link:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,.1) !important;
+}
+
+.sidebar-link.active {
+  color: #fff !important;
+  background: rgba(255,255,255,.15) !important;
+}
+
+/* ── TOPBAR ── */
+.topbar { height: var(--topbar-h); }
+
+/* ── STAT CARDS ── */
+.stat-icon i {
+  font-size: 2rem;
+  color: var(--primary);
+}
+
+.stat-icon-admin {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── LESSON LIST ── */
+.lesson-list { max-height: 420px; overflow-y: auto; }
+
+.lesson-item {
+  border-bottom: 1px solid #F3F4F6;
+  transition: background .2s;
+}
+
+.lesson-item:hover { background: #F9FAFB; }
+.lesson-item.active { background: #EEF2FF; }
+.lesson-item:last-child { border-bottom: none; }
+
+.lesson-num { width: 24px; text-align: center; flex-shrink: 0; }
+
+/* ── QUIZ OPTIONS ── */
+.quiz-option {
+  cursor: pointer;
+  transition: all .2s ease;
+  border: 1.5px solid #E5E7EB !important;
+}
+
+.quiz-option:hover { border-color: var(--primary) !important; background: #EEF2FF; }
+.quiz-option.selected { border-color: var(--primary) !important; background: #EEF2FF; }
+
+/* ── PROGRESS BARS ── */
+.progress-bar { transition: width .6s ease; }
+
+/* ── RESPONSIVE (Mobile) ── */
+@media (max-width: 991.98px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  #page-content { margin-left: 0; }
+}
+
+/* ── ROUND CARDS ── */
+.rounded-4 { border-radius: 16px !important; }
+.rounded-top-4 { border-top-left-radius: 16px !important; border-top-right-radius: 16px !important; }
+
+/* ── SCROLLBAR (sidebar) ── */
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
+
+/* ── VIDEO CONTAINER ── */
+.video-container { background: #000; }
+
+/* ── LAST CHILD UTILS ── */
+.last-no-border:last-child { border-bottom: none !important; padding-bottom: 0 !important; margin-bottom: 0 !important; }
+
+/* ── ADMIN SIDEBAR extra ── */
+.admin-sidebar { background: #111827 !important; }
+
+/* ── BADGE UTILS ── */
+.bg-primary-subtle   { background-color: #EEF2FF !important; }
+.bg-warning-subtle   { background-color: #FFFBEB !important; }
+.bg-success-subtle   { background-color: #ECFDF5 !important; }
+.text-warning-emphasis { color: #92400E !important; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadein { animation: fadeIn .7s ease both; }

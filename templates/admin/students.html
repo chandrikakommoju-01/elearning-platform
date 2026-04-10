@@ -1,0 +1,93 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Manage Students — EduLearn{% endblock %}
+{% block page_title %}Manage Students{% endblock %}
+
+{% block content %}
+<!-- Search -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+  <div class="card-body p-3">
+    <form method="GET" action="{{ url_for('admin_students') }}">
+      <div class="d-flex gap-3">
+        <div class="input-group flex-grow-1">
+          <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" name="q" class="form-control"
+                 placeholder="Search by name or email..." value="{{ search }}"/>
+        </div>
+        <button type="submit" class="btn btn-primary px-4">Search</button>
+        {% if search %}
+        <a href="{{ url_for('admin_students') }}" class="btn btn-outline-secondary">Clear</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <p class="text-muted mb-0 small"><strong>{{ students|length }}</strong> student(s) found</p>
+</div>
+
+{% if students %}
+<div class="card border-0 shadow-sm rounded-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-4">Student</th>
+          <th>Email</th>
+          <th>Courses</th>
+          <th>Quizzes</th>
+          <th>Joined</th>
+          <th>Status</th>
+          <th class="pe-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td class="ps-4">
+            <div class="d-flex align-items-center gap-3">
+              <img src="https://ui-avatars.com/api/?name={{ s.full_name or s.username }}&background=4F46E5&color=fff&size=36"
+                   class="rounded-circle" width="36" height="36" alt="{{ s.username }}"/>
+              <div>
+                <div class="fw-600 small">{{ s.full_name or s.username }}</div>
+                <div class="text-muted" style="font-size:.72rem;">@{{ s.username }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="small text-muted">{{ s.email }}</td>
+          <td><span class="badge bg-primary-subtle text-primary">{{ s.enrollments|length }}</span></td>
+          <td><span class="badge bg-warning-subtle text-warning-emphasis">{{ s.quiz_results|length }}</span></td>
+          <td class="small text-muted">{{ s.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <span class="badge bg-{{ 'success' if s.is_active else 'danger' }}">
+              {{ 'Active' if s.is_active else 'Inactive' }}
+            </span>
+          </td>
+          <td class="pe-4">
+            <div class="d-flex gap-1">
+              <a href="{{ url_for('admin_student_detail', student_id=s.id) }}"
+                 class="btn btn-sm btn-outline-primary" title="View">
+                <i class="bi bi-eye"></i>
+              </a>
+              <form method="POST" action="{{ url_for('toggle_student', student_id=s.id) }}">
+                <button class="btn btn-sm btn-outline-{{ 'danger' if s.is_active else 'success' }}"
+                        title="{{ 'Deactivate' if s.is_active else 'Activate' }}">
+                  <i class="bi bi-{{ 'person-dash' if s.is_active else 'person-check' }}"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+  <i class="bi bi-people display-3 text-muted"></i>
+  <h5 class="mt-3">No students found</h5>
+  <p class="text-muted">{% if search %}Try a different search term.{% else %}Students will appear here once they register.{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}

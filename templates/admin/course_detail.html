@@ -1,0 +1,182 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}{{ course.title }} — Admin{% endblock %}
+{% block page_title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+  <div>
+    <span class="badge bg-{{ 'success' if course.is_active else 'secondary' }} me-2">{{ 'Active' if course.is_active else 'Hidden' }}</span>
+    <span class="badge bg-light text-dark me-2">{{ course.category }}</span>
+    <span class="badge bg-light text-dark">{{ course.level }}</span>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('edit_course', course_id=course.id) }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-pencil me-1"></i>Edit Course
+    </a>
+    <a href="{{ url_for('admin_courses') }}" class="btn btn-outline-secondary btn-sm">← Back</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left: Lessons + Materials + Quizzes -->
+  <div class="col-lg-8">
+
+    <!-- LESSONS SECTION -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+        <h6 class="fw-700 mb-0"><i class="bi bi-play-circle me-2 text-primary"></i>Lessons ({{ course.lessons|length }})</h6>
+        <a href="{{ url_for('add_lesson', course_id=course.id) }}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus me-1"></i>Add Lesson
+        </a>
+      </div>
+      <div class="card-body pt-3">
+        {% if course.lessons %}
+        {% for lesson in course.lessons %}
+        <div class="d-flex align-items-center gap-3 p-3 border rounded-3 mb-2">
+          <div class="badge bg-primary rounded-pill">{{ lesson.order }}</div>
+          <div class="flex-grow-1">
+            <div class="fw-500 small">{{ lesson.title }}</div>
+            <div class="text-muted" style="font-size:.72rem;">
+              {% if lesson.video_url %}<i class="bi bi-play me-1"></i>Video{% endif %}
+              {% if lesson.duration %} · {{ lesson.duration }}{% endif %}
+              {% if lesson.materials %} · {{ lesson.materials|length }} file(s){% endif %}
+              {% if lesson.is_preview %}<span class="badge bg-accent text-dark ms-1">Free Preview</span>{% endif %}
+            </div>
+          </div>
+          <form method="POST" action="{{ url_for('delete_lesson', lesson_id=lesson.id) }}"
+                onsubmit="return confirm('Delete this lesson?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-camera-video display-4"></i>
+          <p class="mt-2 small">No lessons yet. Add your first lesson!</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- MATERIALS SECTION -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+        <h6 class="fw-700 mb-0"><i class="bi bi-folder2-open me-2 text-warning"></i>Course Materials ({{ course.materials|length }})</h6>
+        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
+          <i class="bi bi-upload me-1"></i>Upload Material
+        </button>
+      </div>
+      <div class="card-body pt-3">
+        {% if course.materials %}
+        {% for mat in course.materials %}
+        <div class="d-flex align-items-center gap-3 p-2 border rounded-3 mb-2">
+          <i class="bi bi-file-earmark-{{ 'pdf text-danger' if mat.file_type=='pdf' else 'zip text-warning' if mat.file_type=='zip' else 'text text-primary' }} fs-4"></i>
+          <div class="flex-grow-1">
+            <div class="fw-500 small">{{ mat.title }}</div>
+            <small class="text-muted text-uppercase">{{ mat.file_type }}</small>
+          </div>
+          <form method="POST" action="{{ url_for('delete_material', material_id=mat.id) }}"
+                onsubmit="return confirm('Delete this material?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-muted small text-center py-3">No materials uploaded yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- QUIZZES SECTION -->
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+        <h6 class="fw-700 mb-0"><i class="bi bi-patch-question me-2 text-info"></i>Quizzes ({{ course.quizzes|length }})</h6>
+        <a href="{{ url_for('add_quiz', course_id=course.id) }}" class="btn btn-info btn-sm text-white">
+          <i class="bi bi-plus me-1"></i>Add Quiz
+        </a>
+      </div>
+      <div class="card-body pt-3">
+        {% if course.quizzes %}
+        {% for quiz in course.quizzes %}
+        <div class="d-flex align-items-center gap-3 p-3 border rounded-3 mb-2">
+          <div class="flex-grow-1">
+            <div class="fw-500 small">{{ quiz.title }}</div>
+            <div class="text-muted" style="font-size:.72rem;">
+              {{ quiz.questions|length }} questions · Pass: {{ quiz.pass_score }}%
+              · {{ quiz.results|length }} submissions
+            </div>
+          </div>
+          <form method="POST" action="{{ url_for('delete_quiz', quiz_id=quiz.id) }}"
+                onsubmit="return confirm('Delete this quiz?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-muted small text-center py-3">No quizzes yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Course Info -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm rounded-4 mb-3">
+      <img src="{{ url_for('static', filename='uploads/thumbnails/' + course.thumbnail) }}"
+           onerror="this.src='https://placehold.co/400x220/4F46E5/white?text={{ course.title[:15] }}'"
+           class="card-img-top rounded-top-4" style="height:180px;object-fit:cover;" alt="{{ course.title }}"/>
+      <div class="card-body">
+        <h6 class="fw-700 mb-3">{{ course.title }}</h6>
+        <p class="text-muted small">{{ course.description[:150] }}...</p>
+        <div class="d-flex flex-column gap-2">
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">Instructor</small><small class="fw-500">{{ course.instructor }}</small>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">Students</small><small class="fw-500">{{ course.total_students() }}</small>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">Avg Rating</small>
+            <small class="fw-500 text-warning">★ {{ course.avg_rating() }}</small>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">Created</small>
+            <small>{{ course.created_at.strftime('%d %b %Y') }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Material Modal -->
+<div class="modal fade" id="addMaterialModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-700">Upload Course Material</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('add_material', course_id=course.id) }}" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-500">Title *</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Week 1 Notes" required/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-500">File *</label>
+            <input type="file" name="file" class="form-control"
+                   accept=".pdf,.doc,.docx,.pptx,.xlsx,.zip,.txt" required/>
+            <small class="text-muted">PDF, Word, PowerPoint, Excel, ZIP, TXT</small>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary fw-600">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

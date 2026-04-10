@@ -1,0 +1,133 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}{{ student.full_name or student.username }} — Admin{% endblock %}
+{% block page_title %}Student: {{ student.full_name or student.username }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Left: Profile Card -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm rounded-4 text-center p-4 mb-3">
+      <img src="https://ui-avatars.com/api/?name={{ student.full_name or student.username }}&background=4F46E5&color=fff&size=100"
+           class="rounded-circle mx-auto mb-3" width="90" height="90" alt="{{ student.username }}"/>
+      <h5 class="fw-700 mb-0">{{ student.full_name or student.username }}</h5>
+      <p class="text-muted small mb-1">@{{ student.username }}</p>
+      <span class="badge bg-{{ 'success' if student.is_active else 'danger' }} mb-3">
+        {{ 'Active' if student.is_active else 'Inactive' }}
+      </span>
+      <div class="d-flex justify-content-center gap-2">
+        <form method="POST" action="{{ url_for('toggle_student', student_id=student.id) }}">
+          <button class="btn btn-sm btn-{{ 'outline-danger' if student.is_active else 'outline-success' }}">
+            <i class="bi bi-{{ 'person-dash' if student.is_active else 'person-check' }} me-1"></i>
+            {{ 'Deactivate' if student.is_active else 'Activate' }}
+          </button>
+        </form>
+      </div>
+      <hr/>
+      <div class="row g-2 text-center">
+        <div class="col-4">
+          <div class="fw-700 fs-5 text-primary">{{ enrollments|length }}</div>
+          <small class="text-muted">Courses</small>
+        </div>
+        <div class="col-4">
+          <div class="fw-700 fs-5 text-success">{{ enrollments|selectattr('completed')|list|length }}</div>
+          <small class="text-muted">Done</small>
+        </div>
+        <div class="col-4">
+          <div class="fw-700 fs-5 text-warning">{{ results|length }}</div>
+          <small class="text-muted">Quizzes</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-3">
+      <h6 class="fw-700 mb-3">Account Info</h6>
+      <div class="d-flex flex-column gap-2">
+        <div class="d-flex gap-2"><i class="bi bi-envelope text-muted"></i><small>{{ student.email }}</small></div>
+        <div class="d-flex gap-2"><i class="bi bi-calendar text-muted"></i>
+          <small>Joined {{ student.created_at.strftime('%d %b %Y') }}</small>
+        </div>
+        {% if student.bio %}
+        <div class="d-flex gap-2"><i class="bi bi-info-circle text-muted"></i><small>{{ student.bio }}</small></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Enrollments + Quiz Results -->
+  <div class="col-lg-8">
+    <!-- Enrolled Courses -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+        <h6 class="fw-700">Enrolled Courses ({{ enrollments|length }})</h6>
+      </div>
+      <div class="card-body pt-3">
+        {% if enrollments %}
+        {% for enr in enrollments %}
+        <div class="d-flex align-items-center gap-3 mb-3 p-3 border rounded-3">
+          <div class="flex-grow-1">
+            <div class="fw-600 small">{{ enr.course.title }}</div>
+            <div class="text-muted" style="font-size:.72rem;">
+              Enrolled {{ enr.enrolled_at.strftime('%d %b %Y') }}
+              {% if enr.completed %} · <span class="text-success">Completed {{ enr.completed_at.strftime('%d %b %Y') }}</span>{% endif %}
+            </div>
+          </div>
+          <div style="width:120px;">
+            <div class="d-flex justify-content-between mb-1">
+              <small class="text-muted" style="font-size:.7rem;">Progress</small>
+              <small class="fw-600 text-primary" style="font-size:.7rem;">{{ enr.progress_percent() }}%</small>
+            </div>
+            <div class="progress" style="height:5px;">
+              <div class="progress-bar bg-primary" style="width:{{ enr.progress_percent() }}%;"></div>
+            </div>
+          </div>
+          <span class="badge bg-{{ 'success' if enr.completed else 'secondary' }}">
+            {{ 'Done' if enr.completed else 'Active' }}
+          </span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-muted small text-center py-3">No courses enrolled yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quiz Results -->
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+        <h6 class="fw-700">Quiz Results ({{ results|length }})</h6>
+      </div>
+      <div class="card-body pt-3">
+        {% if results %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle small mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Quiz</th><th>Course</th><th>Score</th><th>%</th><th>Result</th><th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in results|sort(attribute='taken_at', reverse=True) %}
+              <tr>
+                <td class="fw-500">{{ r.quiz.title }}</td>
+                <td class="text-muted">{{ r.quiz.course.title }}</td>
+                <td>{{ r.score }}/{{ r.total }}</td>
+                <td>{{ r.percentage|int }}%</td>
+                <td>
+                  <span class="badge bg-{{ 'success' if r.passed else 'danger' }}">
+                    {{ 'Passed' if r.passed else 'Failed' }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted small text-center py-3">No quiz attempts yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

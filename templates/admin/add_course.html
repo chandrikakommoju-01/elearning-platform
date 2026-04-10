@@ -1,0 +1,56 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Add Course — EduLearn{% endblock %}
+{% block page_title %}Add New Course{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-4">
+        <form method="POST" action="{{ url_for('add_course') }}" enctype="multipart/form-data">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-500">Course Title *</label>
+              <input type="text" name="title" class="form-control" placeholder="e.g. Python for Beginners" required/>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-500">Description *</label>
+              <textarea name="description" class="form-control" rows="4"
+                        placeholder="Describe what students will learn..." required></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-500">Instructor Name *</label>
+              <input type="text" name="instructor" class="form-control" placeholder="Instructor's full name" required/>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-500">Category</label>
+              <select name="category" class="form-select">
+                {% for cat in ['Programming','Design','Business','Marketing','Data Science','Photography','Music','Other'] %}
+                <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-500">Level</label>
+              <select name="level" class="form-select">
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-500">Course Thumbnail</label>
+              <input type="file" name="thumbnail" class="form-control" accept="image/*"/>
+              <small class="text-muted">Recommended: 800×450px (JPG, PNG, WEBP)</small>
+            </div>
+            <div class="col-12 mt-2 d-flex gap-3">
+              <button type="submit" class="btn btn-primary px-5 fw-600">Create Course</button>
+              <a href="{{ url_for('admin_courses') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

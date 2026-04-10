@@ -1,0 +1,283 @@
+{% extends 'student/base_student.html' %}
+{% block title %}{{ course.title }} — EduLearn{% endblock %}
+{% block page_title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- ── LEFT: VIDEO PLAYER + CONTENT ── -->
+  <div class="col-lg-8">
+
+    {% if not enrollment %}
+    <!-- Not Enrolled Banner -->
+    <div class="card border-0 bg-gradient-primary text-white rounded-4 p-4 mb-4">
+      <h5 class="fw-700 mb-1">Enroll to Access All Content</h5>
+      <p class="text-white-70 mb-3">Get full access to all {{ course.lessons|length }} lessons, materials and quizzes.</p>
+      <a href="{{ url_for('enroll', course_id=course.id) }}" class="btn btn-accent btn-sm px-4 w-fit">
+        <i class="bi bi-plus-circle me-1"></i>Enroll Now — Free
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Video Player -->
+    {% if current_lesson %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+      <div class="video-container bg-black">
+        {% if 'youtube' in current_lesson.video_url or 'youtu.be' in current_lesson.video_url %}
+          <iframe src="{{ current_lesson.video_url }}" class="w-100" style="height:400px;"
+                  frameborder="0" allowfullscreen title="{{ current_lesson.title }}"></iframe>
+        {% elif current_lesson.video_url %}
+          <video src="{{ current_lesson.video_url }}" controls class="w-100" style="max-height:400px;">
+            Your browser doesn't support video.
+          </video>
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center bg-dark" style="height:300px;">
+            <div class="text-center text-white">
+              <i class="bi bi-camera-video-off display-3 opacity-50"></i>
+              <p class="mt-2 opacity-50">No video available for this lesson</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="fw-700 mb-1">{{ current_lesson.title }}</h5>
+            <small class="text-muted">
+              <i class="bi bi-clock me-1"></i>{{ current_lesson.duration or 'N/A' }}
+              &nbsp;•&nbsp; Lesson {{ current_lesson.order }} of {{ course.lessons|length }}
+            </small>
+          </div>
+          {% if enrollment %}
+          <a href="{{ url_for('complete_lesson', lesson_id=current_lesson.id) }}"
+             class="btn btn-{{ 'success' if current_lesson.id in completed_ids else 'outline-success' }} btn-sm">
+            <i class="bi bi-check-circle me-1"></i>
+            {{ 'Completed' if current_lesson.id in completed_ids else 'Mark Complete' }}
+          </a>
+          {% endif %}
+        </div>
+        {% if current_lesson.description %}
+        <p class="text-muted mt-3 mb-0">{{ current_lesson.description }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Lesson Materials -->
+    {% if current_lesson.materials %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0 pt-3 pb-0">
+        <h6 class="fw-700 mb-0"><i class="bi bi-paperclip me-2 text-primary"></i>Lesson Materials</h6>
+      </div>
+      <div class="card-body pt-2">
+        {% for mat in current_lesson.materials %}
+        <div class="d-flex align-items-center justify-content-between p-2 border rounded-3 mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-{{ 'pdf text-danger' if mat.file_type=='pdf' else 'zip text-warning' if mat.file_type=='zip' else 'text text-primary' }} fs-5"></i>
+            <div>
+              <div class="fw-500 small">{{ mat.title }}</div>
+              <small class="text-muted text-uppercase">{{ mat.file_type }}</small>
+            </div>
+          </div>
+          {% if enrollment %}
+          <a href="{{ url_for('download_material', material_id=mat.id) }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-download me-1"></i>Download
+          </a>
+          {% else %}
+          <span class="badge bg-light text-muted">Enroll to Download</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Course Rating (enrolled only) -->
+    {% if enrollment %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0 pt-3 pb-0">
+        <h6 class="fw-700"><i class="bi bi-star-fill text-warning me-2"></i>Rate This Course</h6>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('rate_course', course_id=course.id) }}">
+          <div class="d-flex gap-2 mb-3 star-rating">
+            {% for i in range(1,6) %}
+            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" class="d-none"
+                   {% if my_rating and my_rating.rating==i %}checked{% endif %}/>
+            <label for="star{{ i }}" class="fs-3 cursor-pointer">
+              <i class="bi bi-star{% if my_rating and my_rating.rating >= i %}-fill text-warning{% endif %}"></i>
+            </label>
+            {% endfor %}
+          </div>
+          <textarea name="review" class="form-control mb-3" rows="3"
+                    placeholder="Share your experience...">{{ my_rating.review if my_rating else '' }}</textarea>
+          <button type="submit" class="btn btn-primary btn-sm px-4">
+            {{ 'Update Rating' if my_rating else 'Submit Rating' }}
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Reviews -->
+    {% if course.ratings %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0 pt-3 pb-0">
+        <h6 class="fw-700"><i class="bi bi-chat-square-quote me-2"></i>Student Reviews ({{ course.ratings|length }})</h6>
+      </div>
+      <div class="card-body pt-2">
+        {% for r in course.ratings[:5] %}
+        <div class="border-bottom pb-3 mb-3 last-no-border">
+          <div class="d-flex justify-content-between">
+            <strong class="small">{{ r.student.full_name or r.student.username }}</strong>
+            <span class="text-warning small">{{ '★' * r.rating }}{{ '☆' * (5-r.rating) }}</span>
+          </div>
+          {% if r.review %}
+          <p class="text-muted small mb-0 mt-1">{{ r.review }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── RIGHT: COURSE OUTLINE ── -->
+  <div class="col-lg-4">
+    <!-- Course Info -->
+    <div class="card border-0 shadow-sm rounded-4 mb-3">
+      <div class="card-body">
+        <h6 class="fw-700 mb-3">About This Course</h6>
+        <div class="d-flex flex-column gap-2">
+          <div class="d-flex justify-content-between">
+            <small class="text-muted"><i class="bi bi-person me-2"></i>Instructor</small>
+            <small class="fw-500">{{ course.instructor }}</small>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted"><i class="bi bi-bar-chart me-2"></i>Level</small>
+            <span class="badge bg-light text-dark">{{ course.level }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted"><i class="bi bi-play-circle me-2"></i>Lessons</small>
+            <small class="fw-500">{{ course.lessons|length }}</small>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted"><i class="bi bi-people me-2"></i>Students</small>
+            <small class="fw-500">{{ course.total_students() }}</small>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted"><i class="bi bi-star me-2"></i>Rating</small>
+            <small class="fw-500 text-warning">★ {{ course.avg_rating() }}</small>
+          </div>
+        </div>
+
+        {% if enrollment %}
+        <hr/>
+        <div class="mb-1 d-flex justify-content-between">
+          <small class="text-muted">Progress</small>
+          <small class="fw-600 text-primary">{{ enrollment.progress_percent() }}%</small>
+        </div>
+        <div class="progress mb-2" style="height:8px;">
+          <div class="progress-bar bg-primary rounded" style="width:{{ enrollment.progress_percent() }}%;"></div>
+        </div>
+        {% if enrollment.completed %}
+          <span class="badge bg-success w-100 py-2"><i class="bi bi-award me-1"></i>Course Completed!</span>
+        {% endif %}
+        {% else %}
+        <a href="{{ url_for('enroll', course_id=course.id) }}" class="btn btn-primary w-100 mt-3">
+          <i class="bi bi-plus-circle me-1"></i>Enroll for Free
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Lesson List -->
+    <div class="card border-0 shadow-sm rounded-4 mb-3">
+      <div class="card-header bg-transparent border-0 pt-3 pb-0">
+        <h6 class="fw-700">Course Content</h6>
+      </div>
+      <div class="card-body pt-2 p-0">
+        <div class="lesson-list">
+          {% for lesson in course.lessons %}
+          <a href="{{ url_for('course_view', course_id=course.id, lesson=lesson.id) }}"
+             class="lesson-item d-flex align-items-center gap-3 px-3 py-2 text-decoration-none
+                    {{ 'active' if current_lesson and current_lesson.id==lesson.id else '' }}
+                    {{ 'text-muted' if not enrollment and not lesson.is_preview else 'text-dark' }}">
+            <div class="lesson-num">
+              {% if lesson.id in completed_ids %}
+                <i class="bi bi-check-circle-fill text-success"></i>
+              {% elif current_lesson and current_lesson.id==lesson.id %}
+                <i class="bi bi-play-circle-fill text-primary"></i>
+              {% elif not enrollment and not lesson.is_preview %}
+                <i class="bi bi-lock-fill text-muted"></i>
+              {% else %}
+                <span class="badge rounded-pill bg-light text-muted small">{{ lesson.order }}</span>
+              {% endif %}
+            </div>
+            <div class="flex-grow-1">
+              <div class="small fw-{{ '600' if current_lesson and current_lesson.id==lesson.id else '400' }}">
+                {{ lesson.title }}
+              </div>
+              {% if lesson.duration %}
+              <div class="text-muted" style="font-size:.7rem;"><i class="bi bi-clock me-1"></i>{{ lesson.duration }}</div>
+              {% endif %}
+            </div>
+            {% if lesson.is_preview %}
+              <span class="badge bg-accent text-dark" style="font-size:.6rem;">FREE</span>
+            {% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quizzes -->
+    {% if course.quizzes and enrollment %}
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-header bg-transparent border-0 pt-3 pb-0">
+        <h6 class="fw-700"><i class="bi bi-patch-question me-2 text-warning"></i>Quizzes</h6>
+      </div>
+      <div class="card-body pt-2">
+        {% for quiz in course.quizzes %}
+        {% set my_result = current_user.quiz_results|selectattr('quiz_id', 'equalto', quiz.id)|first %}
+        <div class="d-flex justify-content-between align-items-center p-2 border rounded-3 mb-2">
+          <div>
+            <div class="small fw-500">{{ quiz.title }}</div>
+            <div class="text-muted" style="font-size:.72rem;">{{ quiz.questions|length }} questions · Pass: {{ quiz.pass_score }}%</div>
+          </div>
+          {% if my_result %}
+            <span class="badge bg-{{ 'success' if my_result.passed else 'danger' }}">
+              {{ my_result.percentage }}%
+            </span>
+          {% else %}
+            <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-warning btn-sm">Take</a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Course Materials (all) -->
+    {% set course_mats = course.materials|selectattr('lesson_id', 'none')|list %}
+    {% if course_mats and enrollment %}
+    <div class="card border-0 shadow-sm rounded-4 mt-3">
+      <div class="card-header bg-transparent border-0 pt-3 pb-0">
+        <h6 class="fw-700"><i class="bi bi-folder me-2 text-primary"></i>Course Resources</h6>
+      </div>
+      <div class="card-body pt-2">
+        {% for mat in course_mats %}
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <small><i class="bi bi-file-earmark-pdf text-danger me-2"></i>{{ mat.title }}</small>
+          <a href="{{ url_for('download_material', material_id=mat.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2">
+            <i class="bi bi-download"></i>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
